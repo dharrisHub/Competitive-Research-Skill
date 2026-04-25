@@ -25,8 +25,8 @@ seen-features.jsonl (one JSON object per line):
 
 Output: prints to stdout a list of likely matches, one per line:
 
-    [LIKELY MATCH]   new: "Dark mode"  ⟷  history: "Dark theme" (2026-04-10)
-    [POSSIBLE MATCH] new: "CSV import" ⟷  history: "Bulk import" (2026-04-03)
+    [LIKELY MATCH]   new: "Dark mode"  <->  history: "Dark theme" (2026-04-10)
+    [POSSIBLE MATCH] new: "CSV import" <->  history: "Bulk import" (2026-04-03)
     [NEW]            "Workflow automation"
 
 Exit code is always 0. The skill caller is expected to read this output
@@ -152,12 +152,12 @@ def main():
 
         if best_score >= args.likely_threshold:
             print(f'[LIKELY MATCH]   new: "{new_feat["name"]}"  '
-                  f'⟷  history: "{best_match["name"]}" '
+                  f'<->  history: "{best_match["name"]}" '
                   f'({best_match.get("date", "unknown date")}) '
                   f'[score={best_score:.2f}]')
         elif best_score >= args.possible_threshold:
             print(f'[POSSIBLE MATCH] new: "{new_feat["name"]}"  '
-                  f'⟷  history: "{best_match["name"]}" '
+                  f'<->  history: "{best_match["name"]}" '
                   f'({best_match.get("date", "unknown date")}) '
                   f'[score={best_score:.2f}]')
         else:

@@ -38,67 +38,44 @@ State persists across runs in `./competitive-research/`, so each week dedupes ag
 
 ## Installation
 
-Pick one of the three options below. **Option A** (personal install) is right for almost everyone.
+This is a **Claude Code plugin**. Install it via the marketplace flow or directly from a local clone.
 
-### Option A — Personal install (all projects)
+### Option A — Install from this GitHub repo (recommended)
 
-This makes the skill available in every repo on your machine.
+Inside Claude Code:
 
-```bash
-# from the directory where you downloaded the skill
-unzip competitive-research.zip -d ~/.claude/skills/
+```
+/plugin marketplace add dharrisHub/Competitive-Research-Skill
+/plugin install competitive-research@Competitive-Research-Skill
 ```
 
-Verify the layout — the path must be exactly this, with `SKILL.md` directly inside the skill folder:
+The first command registers this repo as a marketplace; the second installs the plugin from it. Claude Code resolves the plugin name (`competitive-research`) from `.claude-plugin/plugin.json`.
+
+### Option B — Local development install
+
+If you cloned this repo and want to test or hack on it locally:
 
 ```bash
-ls ~/.claude/skills/competitive-research/
-# should show: SKILL.md  references/  scripts/  README.md
+git clone https://github.com/dharrisHub/Competitive-Research-Skill.git
+cd Competitive-Research-Skill
 ```
 
-If you see a double-nested folder (e.g., `~/.claude/skills/competitive-research/competitive-research/SKILL.md`), the skill won't be discovered. Move things up one level:
+Then in Claude Code:
 
-```bash
-mv ~/.claude/skills/competitive-research/competitive-research/* ~/.claude/skills/competitive-research/
-rmdir ~/.claude/skills/competitive-research/competitive-research
+```
+/plugin marketplace add ./
+/plugin install competitive-research@Competitive-Research-Skill
 ```
 
-### Option B — Project-scoped install (one repo, shared with team)
+Edits to `skills/competitive-research/SKILL.md` and the references take effect on the next skill invocation — no reinstall needed.
 
-If you want the skill committed to a specific repo so your whole team uses it:
+### Verify the plugin loaded
 
-```bash
-# from the repo root
-mkdir -p .claude/skills
-unzip /path/to/competitive-research.zip -d .claude/skills/
-git add .claude/skills/competitive-research
-git commit -m "Add competitive-research skill"
+```
+/plugin
 ```
 
-### Option C — Monorepo, per-package install
-
-If you have a monorepo and want the skill available only when working inside a specific package:
-
-```bash
-# from the repo root
-mkdir -p packages/your-product/.claude/skills
-unzip /path/to/competitive-research.zip -d packages/your-product/.claude/skills/
-```
-
-Claude Code automatically discovers skills from nested `.claude/skills/` directories when you're working with files in those subdirectories.
-
-### After installing
-
-If Claude Code was already running, the skill is picked up automatically — no restart needed. The exception: if you just created the top-level `~/.claude/skills/` directory for the first time, restart Claude Code so it can start watching the directory.
-
-Verify the skill loaded:
-
-```bash
-# Inside Claude Code
-/competitive-research
-```
-
-You should see the skill name listed. If not, see [Troubleshooting](#troubleshooting) below.
+You should see `competitive-research` in the installed plugins list. The skill itself will be discoverable as `/competitive-research:competitive-research` (plugin name + skill name) or invokable by natural-language trigger inside any project.
 
 ---
 
@@ -185,13 +162,14 @@ The skill checks for this file every run. The end of each report flags inference
 
 ## Customization
 
-The skill is just files. Edit them:
+The plugin is just files. Fork the repo (or clone it for local install per Option B above) and edit:
 
-- **`SKILL.md`** — change the workflow itself (e.g., add a phase, change the report format)
-- **`references/frameworks.md`** — adjust which PM frameworks get applied or how they're scored
-- **`references/codebase-discovery.md`** — add signals specific to your stack (e.g., "also check our `feature-flags.json`")
-- **`references/report-template.md`** — change the report structure
-- **`scripts/dedupe_features.py`** — tune the similarity thresholds for the dedupe pass
+- **`skills/competitive-research/SKILL.md`** — change the workflow itself (e.g., add a phase, change the report format)
+- **`skills/competitive-research/references/frameworks.md`** — adjust which PM frameworks get applied or how they're scored
+- **`skills/competitive-research/references/codebase-discovery.md`** — add signals specific to your stack (e.g., "also check our `feature-flags.json`")
+- **`skills/competitive-research/references/report-template.md`** — change the report structure
+- **`skills/competitive-research/scripts/dedupe_features.py`** — tune the similarity thresholds for the dedupe pass
+- **`.claude-plugin/plugin.json`** — bump `version` when you publish a change
 
 If you customize, keep `SKILL.md` under ~500 lines — Claude Code uses progressive disclosure, where SKILL.md is always loaded but reference files only get read when the workflow points to them. Pushing detail into references keeps the skill efficient.
 
@@ -199,14 +177,14 @@ If you customize, keep `SKILL.md` under ~500 lines — Claude Code uses progress
 
 ## Troubleshooting
 
-**Skill doesn't appear in `/skill-name` autocomplete:**
-- Check the path: `ls ~/.claude/skills/competitive-research/SKILL.md` should exist.
-- Check for double-nesting (the most common error): if `SKILL.md` is at `~/.claude/skills/competitive-research/competitive-research/SKILL.md`, move things up one level.
-- If you just created the top-level `~/.claude/skills/` directory, restart Claude Code so it can start watching it.
+**Plugin doesn't show up in `/plugin` list:**
+- Make sure you ran both commands — `marketplace add` registers the source, `install` adds the plugin from it.
+- Restart Claude Code if the marketplace was just added.
+- Check `~/.claude/plugins/` for the install. If the marketplace add succeeded but install failed, look for errors in the Claude Code log.
 
 **Skill triggers but immediately produces a generic answer:**
-- This usually means Claude Code answered without consulting the skill body. Try a more specific phrase like "use the competitive-research skill to..." or invoke it with `/competitive-research`.
-- Skills tend to undertrigger on simple-sounding requests. Phrasing the ask as multi-step ("do a full competitive analysis and gap report") helps.
+- Claude Code answered without consulting the skill body. Try a more specific phrase like "use the competitive-research skill to..." or invoke it explicitly with `/competitive-research:competitive-research`.
+- Skills undertrigger on simple-sounding requests. Phrasing the ask as multi-step ("do a full competitive analysis and gap report") helps.
 
 **Phase 0 produces a wrong product description:**
 - Open the latest `runs/YYYY-MM-DD/product-dossier.md` to see exactly what was inferred and from which sources.
@@ -220,37 +198,38 @@ If you customize, keep `SKILL.md` under ~500 lines — Claude Code uses progress
 - The skill enforces "at least 2 non-obvious recommendations per report" as a quality check. If you're consistently getting obvious ones, the issue is usually that the inferred strategic constraints are too vague — add specific constraints via override.
 
 **Dedupe script errors:**
-- Run it manually to see the actual error: `python ~/.claude/skills/competitive-research/scripts/dedupe_features.py --new shortlist.json --history ./competitive-research/history/seen-features.jsonl`
+- Run it manually to see the actual error. Find the install path with `ls ~/.claude/plugins/` and run:
+  ```bash
+  python ~/.claude/plugins/<install-dir>/skills/competitive-research/scripts/dedupe_features.py \
+    --new shortlist.json \
+    --history ./competitive-research/history/seen-features.jsonl
+  ```
 - Common cause: malformed JSONL line in the history file. Open it and remove the bad line.
 
 ---
 
 ## How it works (under the hood)
 
-The skill is structured around Claude Code's progressive disclosure pattern:
+The plugin wraps a single skill that uses Claude Code's progressive disclosure pattern:
 
-- **`SKILL.md`** is loaded into context whenever the skill is triggered. It's a workflow skeleton with pointers.
-- **`references/*.md`** are loaded only when the workflow needs them — frameworks for scoring, the report template for writing, the codebase-discovery guide for Phase 0.
-- **`scripts/dedupe_features.py`** runs as a subprocess for the deterministic similarity-matching step. It surfaces likely matches; Claude makes the final semantic call.
+- **`skills/competitive-research/SKILL.md`** is loaded into context whenever the skill is triggered. It's a workflow skeleton with pointers.
+- **`skills/competitive-research/references/*.md`** are loaded only when the workflow needs them — frameworks for scoring, the report template for writing, the codebase-discovery guide for Phase 0.
+- **`skills/competitive-research/scripts/dedupe_features.py`** runs as a subprocess (via `${CLAUDE_PLUGIN_ROOT}`) for the deterministic similarity-matching step. It surfaces likely matches; Claude makes the final semantic call.
 
-This keeps the always-on context small (the SKILL.md is ~170 lines) while making the deeper detail available when needed.
+This keeps the always-on context small (SKILL.md is ~170 lines) while making the deeper detail available when needed.
 
 ---
 
 ## Uninstalling
 
-```bash
-rm -rf ~/.claude/skills/competitive-research/
+Inside Claude Code:
+
+```
+/plugin uninstall competitive-research
+/plugin marketplace remove Competitive-Research-Skill
 ```
 
-Or for a project-scoped install:
-
-```bash
-rm -rf .claude/skills/competitive-research/
-git rm -r .claude/skills/competitive-research && git commit -m "Remove competitive-research skill"
-```
-
-The skill's output (`./competitive-research/` in your repos) is separate and won't be deleted by uninstalling the skill itself — remove that manually if you want.
+The plugin's runtime output (`./competitive-research/` in your project repos) is separate and is not removed by uninstalling. Delete it manually if you want.
 
 ---
 

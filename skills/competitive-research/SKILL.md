@@ -126,10 +126,12 @@ Rank by RICE, then re-sort the top 15 by Strategic Fit for the final shortlist.
 If `history/seen-features.jsonl` has prior entries, run the dedupe script:
 
 ```bash
-python scripts/dedupe_features.py \
-  --new shortlist.json \
+python "${CLAUDE_PLUGIN_ROOT}/skills/competitive-research/scripts/dedupe_features.py" \
+  --new ./competitive-research/runs/YYYY-MM-DD/shortlist.json \
   --history ./competitive-research/history/seen-features.jsonl
 ```
+
+Write `shortlist.json` first (the Phase 6 ranked features as the JSON array shape documented in the script's docstring), then invoke. `${CLAUDE_PLUGIN_ROOT}` resolves to this plugin's install directory regardless of where the user installed it from.
 
 The script does string-level matching and outputs likely matches. For each candidate match, make a final semantic call yourself ("dark mode" and "dark theme support" are the same; "real-time sync" and "real-time collaboration" are not).
 
