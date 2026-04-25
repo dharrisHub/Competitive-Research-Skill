@@ -13,6 +13,8 @@ This skill is intended to be run periodically — typically weekly. It maintains
 
 The user just runs the skill. There is no required configuration. Auto-discover everything from the codebase. Only ask the user for input if a prior run wrote a `competitive-research/overrides.yaml` and they want to update it.
 
+If the user wants to provide hints (target user, known competitors, strategic constraints, etc.) before running, point them at `/competitive-research:setup` — a sibling skill that walks them through the override questions interactively and writes the YAML file. They can also edit `./competitive-research/overrides.yaml` directly.
+
 If the user wants to override auto-discovery, look for `./competitive-research/overrides.yaml` with any of these optional fields:
 
 ```yaml

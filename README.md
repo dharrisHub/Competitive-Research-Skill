@@ -140,7 +140,21 @@ You probably want to add `competitive-research/` to your `.gitignore` unless you
 
 ## Optional: overriding auto-discovery
 
-If a run got something wrong about your product (e.g., it inferred the wrong target user), create `./competitive-research/overrides.yaml`:
+If a run got something wrong about your product (e.g., it inferred the wrong target user), or if you want to seed the next run with hints up front, you have two ways to set overrides.
+
+### Option 1 — Interactive setup (recommended)
+
+Inside Claude Code, in your project repo:
+
+```
+/competitive-research:setup
+```
+
+This walks you through the optional questions one at a time (product name, URL, target user, extra competitors, strategic constraints, monorepo scope), shows you the diff before writing, and saves to `./competitive-research/overrides.yaml`. Skip any question to leave that field on auto-discovery. The setup skill only fires on this explicit slash invocation — it won't auto-trigger.
+
+### Option 2 — Edit the YAML directly
+
+Create or edit `./competitive-research/overrides.yaml`:
 
 ```yaml
 # Anything blank gets auto-discovered. Only fill in what's wrong.
@@ -156,7 +170,7 @@ strategic_constraints_override: |
 monorepo_scope: ""
 ```
 
-The skill checks for this file every run. The end of each report flags inferences that the user might want to override, so you only fill in fields that the skill got wrong.
+The analysis skill checks for this file every run. The end of each report flags inferences that the user might want to override, so you only fill in fields that the skill got wrong.
 
 ---
 

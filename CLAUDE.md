@@ -20,6 +20,7 @@ That framing matters when editing:
   - `frameworks.md` — Phases 5–6 (JTBD, Kano, RICE, Strategic Fit, etc.)
   - `report-template.md` — Phase 8 deliverable structure
 - `skills/competitive-research/scripts/dedupe_features.py` — deterministic similarity match used in Phase 7. Pure stdlib (no deps). Always exits 0; the skill caller makes the final semantic call from its stdout.
+- `skills/setup/SKILL.md` — interactive override-questions wizard. Has `disable-model-invocation: true` so it only fires on explicit `/competitive-research:setup` invocation, never auto-triggered. Writes `./competitive-research/overrides.yaml` in the user's project. Keep its workflow purely conversational — no codebase introspection (that's the analysis skill's job).
 - `README.md` — install/usage doc for end users (not Claude). Keep in sync with the workflow if behavior changes.
 
 ## Editing the workflow
