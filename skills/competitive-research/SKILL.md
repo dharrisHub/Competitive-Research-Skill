@@ -42,6 +42,8 @@ The workflow has 8 phases. Print a one-paragraph plan first, then execute end-to
 
 This is the single most important phase. Skipping it or doing it shallowly causes every later phase to fail. The detailed signal-by-signal guide is in `references/codebase-discovery.md`. Read that file before starting Phase 0 — it lists exact files to check, shell commands to run, and fallback rules for when signals are missing.
 
+**Reuse check first:** if `./competitive-research/runs/YYYY-MM-DD/product-dossier.md` already exists for today (likely written by a prior `/competitive-research:preview` run), read it and skip the regeneration step. Same for `./competitive-research/competitors.yaml` — if Phase 2 already populated it today, reuse rather than redo. The preview skill exists so users can sanity-check Phase 0 + Phase 2 cheaply before the full analysis; honoring its output makes the round-trip fast.
+
 The output of Phase 0 is `./competitive-research/runs/YYYY-MM-DD/product-dossier.md` containing:
 
 - **Product name, one-liner, public URL, target user, pricing model**
@@ -137,18 +139,27 @@ Write `shortlist.json` first (the Phase 6 ranked features as the JSON array shap
 
 The script does string-level matching and outputs likely matches. For each candidate match, make a final semantic call yourself ("dark mode" and "dark theme support" are the same; "real-time sync" and "real-time collaboration" are not).
 
-Tag each shortlisted feature:
-- **`[NEW]`** — first time recommended
+**Apply outcome status filtering.** For every match against a historical entry, look up that entry's `status` field in `seen-features.jsonl`. Apply these rules before tagging:
+
+- `status: shipped` or `status: wontfix` → **drop** the new candidate from the shortlist entirely. Don't re-suggest things the user already shipped or explicitly killed. Note in a comment why it was dropped.
+- `status: in-progress` → **drop** from the shortlist; mention in the report's "Already in flight" sub-section: *"X is in progress (since [date]) — competitors [Y, Z] also have it now."*
+- `status: rejected` → keep on the shortlist, tag `[REVISITED]`, and explain *what specifically changed* since the rejection (new competitor adoption, new user evidence, changed strategic constraint). Reference the original `rejection_reason` from the history entry.
+- `status: unmarked` or absent → use the time-based logic below.
+
+For unmarked matches:
+- **`[NEW]`** — first time recommended (no historical match)
 - **`[RECURRING — first suggested YYYY-MM-DD]`** — proposed before; note what's changed (e.g., "now 3 competitors ship it, up from 1")
 - **`[REVISITED]`** — previously dismissed but circumstances changed; explain why
 
-Append every shortlisted feature to `seen-features.jsonl` with date, name, normalized description, and scores.
+Append every newly shortlisted feature to `seen-features.jsonl` with date, name, normalized description, and scores. Do not set a `status` field — the user marks status via `/competitive-research:track`.
 
 ### Phase 8 — Write the report
 
 Write `./competitive-research/runs/YYYY-MM-DD/report.md` using the template in `references/report-template.md`.
 
 The report has 8 sections; the template specifies what goes in each. Do not invent your own structure — the consistent format makes weekly reports comparable.
+
+**Also write `report.json` alongside `report.md`.** The structured shortlist enables tooling integrations (Linear/Jira/Notion ingestion, dashboards, longitudinal analysis). The JSON schema is documented at the bottom of `references/report-template.md`. Mirror the markdown shortlist exactly — same ranking, same scores, same evidence. JSON is the machine-readable view of the same content; never let them diverge.
 
 ## Quality bar (self-audit before delivering)
 

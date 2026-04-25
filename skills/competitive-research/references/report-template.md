@@ -112,3 +112,66 @@ This is the structure for `./competitive-research/runs/YYYY-MM-DD/report.md`. Us
 **Don't bury the lead.** Section 1 (executive summary) should stand alone. If a founder reads only section 1 and the top 3 recommendations, they should still walk away with the right action items.
 
 **File references in section 5 are the unique value of running this from inside the repo.** Don't skip them. "We could ship this by extending `src/billing/checkout.ts` and adding a new tier definition in `lib/plans.ts`" is what makes this report feel grounded vs. generic.
+
+---
+
+## JSON sidecar schema (`report.json`)
+
+Phase 8 writes a structured `report.json` next to `report.md`. This is what downstream tooling (Linear/Jira/Notion ingestion, dashboards, longitudinal trend analysis) reads. The JSON must mirror the markdown shortlist exactly — same ranking, same scores, same evidence. Never let them diverge.
+
+```json
+{
+  "run_date": "YYYY-MM-DD",
+  "product_name": "string",
+  "report_md_path": "competitive-research/runs/YYYY-MM-DD/report.md",
+  "competitors": ["string", "..."],
+  "shortlist": [
+    {
+      "rank": 1,
+      "name": "string — same as markdown heading",
+      "tag": "NEW | RECURRING | REVISITED",
+      "first_suggested_date": "YYYY-MM-DD or null if NEW",
+      "description": "string — one-line plain language",
+      "evidence": {
+        "shipped_by": ["competitor name", "..."],
+        "user_quotes": [
+          {"text": "string", "source_url": "string"}
+        ]
+      },
+      "jtbd_advanced": "string — which JTBD from the dossier",
+      "kano_class": "Must-Have | Performance | Delighter",
+      "user_pain": "string",
+      "scores": {
+        "reach_per_qtr": 800,
+        "impact": 2,
+        "confidence": 0.8,
+        "effort_person_months": 1,
+        "rice": 1280,
+        "strategic_fit": 7
+      },
+      "implementation": {
+        "mvp_wedge": "string",
+        "full_version": "string",
+        "codebase_landing": ["src/path/to/file.ts", "app/path/"]
+      },
+      "risks": "string"
+    }
+  ],
+  "skipped_features": [
+    {"name": "string", "competitors_with_it": ["string"], "reason": "string"}
+  ],
+  "non_feature_observations": ["string", "..."],
+  "in_flight": [
+    {"name": "string", "in_progress_since": "YYYY-MM-DD", "competitors_with_it": ["string"]}
+  ],
+  "assumptions_to_verify": [
+    {"inference": "string", "override_field": "target_user_override | ..."}
+  ]
+}
+```
+
+Notes:
+- `confidence` is decimal (0.0–1.0), not percent.
+- `tag` enum is exactly the three strings listed — don't invent variants.
+- Omit `user_quotes` entries where you don't have a real source URL. Don't fabricate URLs to fill the schema.
+- `in_flight` is populated from Phase 7's status filtering (entries with `status: in-progress` in `seen-features.jsonl`).

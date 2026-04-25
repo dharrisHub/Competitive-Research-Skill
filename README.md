@@ -75,7 +75,20 @@ Edits to `skills/competitive-research/SKILL.md` and the references take effect o
 /plugin
 ```
 
-You should see `competitive-research` in the installed plugins list. The skill itself will be discoverable as `/competitive-research:competitive-research` (plugin name + skill name) or invokable by natural-language trigger inside any project.
+You should see `competitive-research` in the installed plugins list.
+
+### What's in the plugin
+
+Four skills, each invokable inside any project repo:
+
+| Invocation | Purpose |
+|---|---|
+| *natural language* ("run the competitive research") or `/competitive-research:competitive-research` | The full 8-phase weekly analysis. The main event. |
+| `/competitive-research:preview` | 1–2 minute sanity check — runs only Phase 0 (dossier) + Phase 2 (competitor list), then asks before doing the full deep dive. |
+| `/competitive-research:setup` | Interactive walkthrough of the optional override questions (target user, known competitors, strategic constraints, monorepo scope). Writes `overrides.yaml`. |
+| `/competitive-research:track` | Mark past recommendations as shipped / in-progress / rejected / wontfix. Future runs filter accordingly so you don't see the same suggestion next week. |
+
+The three slash-only skills (`preview`, `setup`, `track`) only fire on explicit invocation — they won't auto-trigger from natural language. The main analysis skill triggers broadly so you can ask for it conversationally.
 
 ---
 
@@ -96,6 +109,8 @@ You should see `competitive-research` in the installed plugins list. The skill i
    - "Run the weekly competitive review"
 
 The first run takes the longest (typically 10–20 minutes of work) because it's discovering everything from scratch — your product identity, your features, your competitors. Subsequent runs are faster because state persists.
+
+**Tip — preview before committing to a full run.** If you want to sanity-check the inferred product identity and competitor list before spending 15 minutes, run `/competitive-research:preview` first. It does only Phase 0 (dossier) and Phase 2 (competitor list), prints them, and asks before continuing. The full analysis afterwards reuses the dossier rather than redoing it.
 
 ### Weekly cadence
 
@@ -127,9 +142,11 @@ your-repo/
     │       ├── product-dossier.md           # what the skill thinks your product is
     │       ├── raw-notes/                   # one file per competitor, full notes
     │       ├── evidence.md                  # quotes, screenshots, pricing snapshots
-    │       └── report.md                    # ← the deliverable
+    │       ├── report.md                    # ← the human deliverable
+    │       └── report.json                  # structured shortlist for tooling integrations
     ├── history/
-    │   └── seen-features.jsonl              # dedupe log, append-only
+    │   ├── seen-features.jsonl              # dedupe log + outcome status (shipped/rejected/etc)
+    │   └── outcomes.jsonl                   # append-only audit log of status changes
     ├── competitors.yaml                     # persistent competitor list
     └── overrides.yaml                       # optional, only if you want to override discovery
 ```
